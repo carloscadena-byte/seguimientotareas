@@ -69,4 +69,67 @@ st.subheader("🔍 Filtros de Búsqueda")
 col_f_resp, col_f_estado, col_f_prio = st.columns([2, 1, 1])
 
 with col_f_resp:
-    filtro_responsable =
+    filtro_responsable = st.multiselect(
+        "Filtrar por Responsable:",
+        options=RESPONSABLES,
+        default=[]
+    )
+
+with col_f_estado:
+    filtro_estado = st.selectbox(
+        "Estado de Cumplimiento:",
+        options=["Todas", "Solo Pendientes", "Solo Cumplidas"]
+    )
+
+with col_f_prio:
+    filtro_prioridad = st.multiselect(
+        "Prioridad:",
+        options=["Alta", "Media", "Baja"],
+        default=[]
+    )
+
+# Aplicar lógica de filtrado sobre el DataFrame
+df_filtrado = st.session_state.tareas_df.copy()
+
+if filtro_responsable:
+    df_filtrado = df_filtrado[df_filtrado["Responsable"].isin(filtro_responsable)]
+
+if filtro_estado == "Solo Pendientes":
+    df_filtrado = df_filtrado[df_filtrado["Cumplida"] == False]
+elif filtro_estado == "Solo Cumplidas":
+    df_filtrado = df_filtrado[df_filtrado["Cumplida"] == True]
+
+if filtro_prioridad:
+    df_filtrado = df_filtrado[df_filtrado["Prioridad"].isin(filtro_prioridad)]
+
+# Mostrar resumen y tabla filtrada
+st.subheader(f"Lista de Tareas ({len(df_filtrado)} encontradas)")
+
+editor_df = st.data_editor(
+    df_filtrado,
+    num_rows="dynamic",
+    use_container_width=True,
+    key="tabla_editor",
+    column_config={
+        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False),
+        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES),
+        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"])
+    }
+)
+
+# Botones de acción y métricas
+col_save, col_metric = st.columns([1, 3])
+with col_save:
+    if st.button("💾 Guardar Cambios en la Vista", use_container_width=True):
+        # Actualizar los registros modificados en la base principal
+        st.session_state.tareas_df.update(editor_df)
+        guardar_datos(st.session_state.tareas_df)
+        st.success("Cambios actualizados en el sistema.")
+        st.rerun()
+
+with col_metric:
+    if not df_filtrado.empty:
+        total = len(df_filtrado)
+        completadas = int(df_filtrado["Cumplida"].sum())
+        avance = int((completadas / total) * 100) if total > 0 else 0
+        st.progress(avance / 100, text=f"Progreso en vista actual: {avance}% ({completadas}/{total} tareas)")
