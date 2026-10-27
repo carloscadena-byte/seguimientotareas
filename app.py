@@ -16,7 +16,12 @@ RESPONSABLES = [
 
 COLUMNAS = ["Cumplida", "Tarea", "Responsable", "Prioridad", "Fecha"]
 
-st.set_page_config(page_title="Seguimiento de Tareas", page_icon="📋", layout="wide")
+# Configuración de página con icono oficial en la pestaña del navegador
+st.set_page_config(
+    page_title="Fast Moda - Seguimiento", 
+    page_icon="🌸", 
+    layout="wide"
+)
 
 # 1. Consulta con caché para evitar llamadas lentas repetidas
 @st.cache_data(show_spinner=False)
@@ -55,18 +60,29 @@ def enviar_datos(payload):
 if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
-# 🛠️ CORRECCIÓN AQUÍ: Se añade el argumento '2' (st.columns(2)) para evitar el TypeError
-col_titulo, col_sync = st.columns(2)
+# --- 🌸 DISEÑO DE CABECERA CORPORATIVA ---
+col_logo, col_titulo, col_sync = st.columns([1, 4, 2])
+
+with col_logo:
+    # Mostramos el isotipo/logo de Lili Pink (Fast Moda) desde una URL web segura
+    # Puedes cambiar esta URL por el enlace de cualquier logo que prefieras
+    st.image(
+        "https://lilipink.com/cdn/shop/files/LILI_PINK_Mesa_de_trabajo_1_f5c09e3e-4509-4dbe-a178-ee38c11e389e_140x.png", 
+        width=120
+    )
+
 with col_titulo:
-    st.title("📋 Seguimiento de Tareas Sourcing")
+    st.title("📋 Tablero de Seguimiento de Tareas")
+    st.caption("Fast Moda S.A.S. — Gestión Operativa Interna")
+
 with col_sync:
     st.write("")
-    if st.button("🔄 Actualizar", use_container_width=True):
+    if st.button("🔄 Sincronizar con Google Sheets", use_container_width=True):
         st.cache_data.clear()
         st.session_state.df_tareas = obtener_datos_remotos()
         st.toast("Datos Sincronizados", icon="✅")
 
-# 2. ⚡ FRAGMENTO AISLADO: El formulario corre de forma independiente del resto de la página
+# 2. ⚡ FRAGMENTO AISLADO: El formulario corre de forma independiente de la página
 @st.fragment
 def formulario_registro():
     with st.expander("➕ Registrar Nueva Tarea", expanded=False):
@@ -91,7 +107,7 @@ def formulario_registro():
                         nueva_fila_df = pd.DataFrame([nueva_fila], columns=COLUMNAS)
                         st.session_state.df_tareas = pd.concat([st.session_state.df_tareas, nueva_fila_df], ignore_index=True)
                         st.toast("¡Tarea guardada exitosamente!", icon="🚀")
-                        # Forzamos una actualización limpia de la pantalla sin reconstrucción completa
+                        # Forzamos una actualización limpia de la pantalla
                         st.rerun(scope="app")
                     else:
                         st.error(f"Error al enviar a Google: {mensaje}")
@@ -159,7 +175,7 @@ editor_df = st.data_editor(
 # Guardar cambios manuales (Ediciones masivas)
 col_save, col_metric = st.columns(2)
 with col_save:
-    if st.button("💾 Guardar Cambios", use_container_width=True):
+    if st.button("💾 Guardar Cambios en Google Sheets", use_container_width=True):
         st.session_state.df_tareas.update(editor_df)
         data_matrix = [COLUMNAS] + st.session_state.df_tareas.values.tolist()
         exito, mensaje = enviar_datos({"action": "update_all", "data": data_matrix})
