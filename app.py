@@ -5,6 +5,14 @@ from datetime import date
 
 ARCHIVO_DATOS = "tareas.csv"
 
+# 👥 Lista predefinida de responsables
+RESPONSABLES = [
+    "Carlos Cadena",
+    "Carlos Muñoz",
+    "Sivia Hernandez",
+    "Veronica Vasquez"
+]
+
 # Configuración de página
 st.set_page_config(page_title="Seguimiento de Tareas", page_icon="📋", layout="wide")
 st.title("📋 Tablero de Seguimiento de Tareas")
@@ -31,7 +39,8 @@ with st.expander("➕ Registrar Nueva Tarea", expanded=False):
     with st.form("nuevo_registro", clear_on_submit=True):
         col_t, col_r = st.columns([2, 1])
         tarea = col_t.text_input("Descripción de la Tarea")
-        responsable = col_r.text_input("Persona a Cargo")
+        # 🔄 Cambiado a selectbox con la lista de responsables
+        responsable = col_r.selectbox("Persona a Cargo", RESPONSABLES)
 
         col_p, col_f = st.columns([1, 1])
         prioridad = col_p.selectbox("Prioridad", ["Baja", "Media", "Alta"], index=1)
@@ -42,7 +51,7 @@ with st.expander("➕ Registrar Nueva Tarea", expanded=False):
                 nueva_tarea = {
                     "Cumplida": False,
                     "Tarea": tarea.strip(),
-                    "Responsable": responsable.strip() if responsable.strip() else "Sin asignar",
+                    "Responsable": responsable,
                     "Prioridad": prioridad,
                     "Fecha": str(fecha_limite)
                 }
@@ -56,9 +65,9 @@ with st.expander("➕ Registrar Nueva Tarea", expanded=False):
             else:
                 st.warning("Por favor especifica una descripción para la tarea.")
 
-# Tabla interactiva con checkboxes de cumplimiento
+# Tabla interactiva con checkboxes de cumplimiento y responsables en lista
 st.subheader("Lista de Tareas")
-st.caption("Marca las casillas de cumplimiento y haz clic en 'Guardar Cambios' para actualizar el archivo.")
+st.caption("Marca las casillas de cumplimiento o edita la tabla directamente y haz clic en 'Guardar Cambios'.")
 
 editor_df = st.data_editor(
     st.session_state.tareas_df,
@@ -66,6 +75,8 @@ editor_df = st.data_editor(
     use_container_width=True,
     column_config={
         "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False),
+        # 🔄 Ahora la columna en la tabla también restringe la edición a estos nombres
+        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES),
         "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"])
     }
 )
