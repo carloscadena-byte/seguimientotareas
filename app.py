@@ -165,9 +165,11 @@ editor_df = st.data_editor(
     use_container_width=True,
     key="tabla_editor",
     column_config={
-        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False),
-        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES),
-        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"])
+        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False, width="small"),
+        "Tarea": st.column_config.TextColumn("Descripción de la Tarea", required=True),
+        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES, width="medium"),
+        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"], width="small"),
+        "Fecha": st.column_config.DateColumn("Fecha Límite", width="small")
     }
 )
 
