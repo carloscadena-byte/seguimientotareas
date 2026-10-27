@@ -58,7 +58,7 @@ if "df_tareas" not in st.session_state:
 # 🛠️ CORRECCIÓN AQUÍ: Se añade el argumento '2' (st.columns(2)) para evitar el TypeError
 col_titulo, col_sync = st.columns(2)
 with col_titulo:
-    st.title("📋 Tablero de Seguimiento de Tareas")
+    st.title("📋 Seguimiento de Tareas Sourcing")
 with col_sync:
     st.write("")
     if st.button("🔄 Actualizar", use_container_width=True):
