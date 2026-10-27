@@ -73,7 +73,6 @@ with col_logo:
 
 with col_titulo:
     st.title("📋 Seguimiento de Tareas Sourcing")
-    st.caption("Fast Moda S.A.S. — Gestión Operativa Interna")
 
 with col_sync:
     st.write("")
