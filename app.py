@@ -42,7 +42,7 @@ tareas_actuales = cargar_datos()
 # Cabecera con botón de sincronización manual rápida
 col_titulo, col_sync = st.columns([4, 1])
 with col_sync:
-    if st.button("🔄 Sincronizar Ahora", use_container_width=True):
+    if st.button("🔄 Actualizar", use_container_width=True):
         st.rerun()
 
 # Formulario para registrar tareas
