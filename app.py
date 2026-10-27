@@ -5,7 +5,7 @@ import json
 from datetime import date
 
 # 🔗 1. PEGA AQUÍ TU URL COPIADA (Debe terminar en /exec)
-WEBAPP_URL = "WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxyQQyYK4sCmb0ix4FkzwoGsbHxBpnL7/exec"" # <-- Reemplázala completa aquí
+WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxyQQyYK4sCmb0ix4FkzwoGsbHxBpnL7/exec"" # <-- Reemplázala completa aquí
 
 RESPONSABLES = [
     "",
