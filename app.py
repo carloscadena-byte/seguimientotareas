@@ -61,7 +61,8 @@ if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
 # --- 🌸 DISEÑO DE CABECERA CORPORATIVA ---
-col_logo, col_titulo, col_sync = st.columns(spec=)
+# 🛠️ CORRECCIÓN DE SINTAXIS: Se asignó correctamente spec=[1, 4, 2]
+col_logo, col_titulo, col_sync = st.columns(spec=[1, 4, 2])
 
 with col_logo:
     st.image(
@@ -156,10 +157,7 @@ if filtro_prioridad:
 
 st.subheader(f"Lista de Tareas ({len(df_filtrado)} encontradas)")
 
-# Tabla interactiva
-# 🛠️ AJUSTE SEGURO DE COLUMNAS:
-# Dejamos que Streamlit maneje la columna de texto de forma automática para evitar el error de la API.
-# Definimos el tamaño compacto del Checkbox "Cumplida" en 80 píxeles.
+# Tabla interactiva segura y ajustada con anchos numéricos fijos
 editor_df = st.data_editor(
     df_filtrado,
     num_rows="dynamic",
