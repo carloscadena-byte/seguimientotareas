@@ -61,7 +61,7 @@ with col_titulo:
     st.title("📋 Tablero de Seguimiento de Tareas")
 with col_sync:
     st.write("")
-    if st.button("🔄 Sincronizar con Google Sheets", use_container_width=True):
+    if st.button("🔄 Actualizar", use_container_width=True):
         st.cache_data.clear()
         st.session_state.df_tareas = obtener_datos_remotos()
         st.toast("Datos Sincronizados", icon="✅")
