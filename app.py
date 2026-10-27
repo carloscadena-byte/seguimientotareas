@@ -61,8 +61,7 @@ if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
 # --- 🌸 DISEÑO DE CABECERA CORPORATIVA ---
-# 🛠️ CORRECCIÓN DE SINTAXIS: Se asignó correctamente spec=[1, 4, 2]
-col_logo, col_titulo, col_sync = st.columns(spec=[1, 4, 2])
+col_logo, col_titulo, col_sync = st.columns(spec=)
 
 with col_logo:
     st.image(
@@ -157,7 +156,10 @@ if filtro_prioridad:
 
 st.subheader(f"Lista de Tareas ({len(df_filtrado)} encontradas)")
 
-# Tabla interactiva segura y ajustada con anchos numéricos fijos
+# Tabla interactiva
+# 🛠️ AJUSTE SEGURO DE COLUMNAS:
+# Se definen explícitamente todas las columnas del DataFrame de forma homogénea en píxeles.
+# "Tarea" no se restringe en tamaño (usa None) para tomar el resto del ancho de la pantalla de forma automática.
 editor_df = st.data_editor(
     df_filtrado,
     num_rows="dynamic",
@@ -165,6 +167,7 @@ editor_df = st.data_editor(
     key="tabla_editor",
     column_config={
         "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False, width=80),
+        "Tarea": st.column_config.TextColumn("Descripción de la Tarea", width=None),
         "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES, width=180),
         "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"], width=100),
         "Fecha": st.column_config.DateColumn("Fecha Límite", width=120)
