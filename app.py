@@ -55,8 +55,8 @@ def enviar_datos(payload):
 if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
-# Cabecera principal
-col_titulo, col_sync = st.columns()
+# 🛠️ CORRECCIÓN AQUÍ: Se añade el argumento '2' (st.columns(2)) para evitar el TypeError
+col_titulo, col_sync = st.columns(2)
 with col_titulo:
     st.title("📋 Tablero de Seguimiento de Tareas")
 with col_sync:
@@ -64,7 +64,7 @@ with col_sync:
     if st.button("🔄 Sincronizar con Google Sheets", use_container_width=True):
         st.cache_data.clear()
         st.session_state.df_tareas = obtener_datos_remotos()
-        st.toast("Datos sincronizados con Google Sheets", icon="✅")
+        st.toast("Datos Sincronizados", icon="✅")
 
 # 2. ⚡ FRAGMENTO AISLADO: El formulario corre de forma independiente del resto de la página
 @st.fragment
@@ -165,7 +165,7 @@ with col_save:
         exito, mensaje = enviar_datos({"action": "update_all", "data": data_matrix})
         
         if exito:
-            st.toast("¡Cambios actualizados en Google Sheets!", icon="💾")
+            st.toast("¡Cambios actualizados!", icon="💾")
             st.rerun()
         else:
             st.error(f"Error al sincronizar: {mensaje}")
