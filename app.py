@@ -68,7 +68,7 @@ with col_logo:
     # Puedes cambiar esta URL por el enlace de cualquier logo que prefieras
     st.image(
         "https://www.comfenalcovalle.com.co/wp-content/uploads/2026/06/Logo-Lili-Pink-_-Yoi-YAHAD-RGB-20122023_Mesa-de-trabajo-1-scaled.png", 
-        width=120
+        width=180
     )
 
 with col_titulo:
