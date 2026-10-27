@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
+import requests
 from datetime import date
-from streamlit_gsheets import GSheetsConnection
+
+# 🔗 Pega aquí la URL que obtuviste al implementar tu Google Apps Script (/exec)
+WEBAPP_URL = "https://script.google.com/macros/s/TU_SCRIPT_ID_AQUI/exec"
 
 RESPONSABLES = [
     "",
@@ -11,34 +14,42 @@ RESPONSABLES = [
     "Veronica Vasquez"
 ]
 
-st.set_page_config(page_title="Seguimiento de Tareas", page_icon="📋", layout="wide")
+COLUMNAS = ["Cumplida", "Tarea", "Responsable", "Prioridad", "Fecha"]
 
-# Conexión directa a Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
+st.set_page_config(page_title="Seguimiento de Tareas", page_icon="📋", layout="wide")
 
 def cargar_datos():
     try:
-        # ttl=0 fuerza a leer los datos más frescos de Google Sheets sin esperar caché
-        df = conn.read(ttl=0)
-        if df is None or df.empty:
-            return pd.DataFrame(columns=["Cumplida", "Tarea", "Responsable", "Prioridad", "Fecha"])
-        df["Responsable"] = df["Responsable"].fillna("")
-        df["Cumplida"] = df["Cumplida"].astype(bool)
-        return df
+        res = requests.get(WEBAPP_URL, timeout=10)
+        valores = res.json()
+        if len(valores) > 1:
+            df = pd.DataFrame(valores[1:], columns=valores[0])
+            for col in COLUMNAS:
+                if col not in df.columns:
+                    df[col] = ""
+            df["Cumplida"] = df["Cumplida"].apply(lambda x: str(x).lower() in ["true", "1", "yes", "si"])
+            df["Responsable"] = df["Responsable"].fillna("")
+            return df[COLUMNAS]
+        return pd.DataFrame(columns=COLUMNAS)
     except Exception:
-        return pd.DataFrame(columns=["Cumplida", "Tarea", "Responsable", "Prioridad", "Fecha"])
+        return pd.DataFrame(columns=COLUMNAS)
 
-def guardar_datos(df):
-    conn.update(data=df)
+def agregar_fila(nueva_fila):
+    payload = {"action": "append", "row": nueva_fila}
+    requests.post(WEBAPP_URL, json=payload, timeout=10)
+
+def actualizar_todo(df):
+    data_matrix = [COLUMNAS] + df.values.tolist()
+    payload = {"action": "update_all", "data": data_matrix}
+    requests.post(WEBAPP_URL, json=payload, timeout=10)
 
 # Cabecera y botón de refresco
-col_titulo, col_sync = st.columns([4, 1])
+col_titulo, col_sync = st.columns()
 with col_titulo:
     st.title("📋 Tablero de Seguimiento de Tareas")
 with col_sync:
     st.write("")
     if st.button("🔄 Sincronizar Ahora", use_container_width=True):
-        st.cache_data.clear()
         st.rerun()
 
 df_actual = cargar_datos()
@@ -46,27 +57,19 @@ df_actual = cargar_datos()
 # Formulario para registrar tareas
 with st.expander("➕ Registrar Nueva Tarea", expanded=False):
     with st.form("nuevo_registro", clear_on_submit=True):
-        col_t, col_r = st.columns([2, 1])
+        col_t, col_r = st.columns()
         tarea = col_t.text_input("Descripción de la Tarea")
         responsable = col_r.selectbox("Persona a Cargo", RESPONSABLES, index=0)
 
-        col_p, col_f = st.columns([1, 1])
+        col_p, col_f = st.columns()
         prioridad = col_p.selectbox("Prioridad", ["Baja", "Media", "Alta"], index=1)
         fecha_limite = col_f.date_input("Fecha Límite", value=date.today())
 
         if st.form_submit_button("Agregar Tarea"):
             if tarea.strip():
-                nueva_tarea = pd.DataFrame([{
-                    "Cumplida": False,
-                    "Tarea": tarea.strip(),
-                    "Responsable": responsable,
-                    "Prioridad": prioridad,
-                    "Fecha": str(fecha_limite)
-                }])
-                df_fresco = cargar_datos()
-                df_total = pd.concat([df_fresco, nueva_tarea], ignore_index=True)
-                guardar_datos(df_total)
-                st.success("¡Tarea guardada directamente en Google Sheets!")
+                fila = [False, tarea.strip(), responsable, prioridad, str(fecha_limite)]
+                agregar_fila(fila)
+                st.success("¡Tarea agregada directamente en Google Sheets!")
                 st.rerun()
             else:
                 st.warning("Por favor especifica una descripción para la tarea.")
@@ -75,7 +78,7 @@ st.markdown("---")
 
 # Filtros
 st.subheader("🔍 Filtros de Búsqueda")
-col_f_resp, col_f_estado, col_f_prio = st.columns([2, 1, 1])
+col_f_resp, col_f_estado, col_f_prio = st.columns()
 
 with col_f_resp:
     filtro_responsable = st.multiselect(
@@ -124,12 +127,12 @@ editor_df = st.data_editor(
     }
 )
 
-col_save, col_metric = st.columns([1, 3])
+col_save, col_metric = st.columns()
 with col_save:
     if st.button("💾 Guardar Cambios", use_container_width=True):
-        df_base = cargar_datos()
+        df_base = df_actual.copy()
         df_base.update(editor_df)
-        guardar_datos(df_base)
+        actualizar_todo(df_base)
         st.success("¡Base de datos actualizada en Google Sheets!")
         st.rerun()
 
