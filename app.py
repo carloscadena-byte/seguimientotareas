@@ -4,8 +4,8 @@ import requests
 import json
 from datetime import date
 
-# 🔗 1. PEGA AQUÍ TU URL COPIADA (Debe terminar en /exec)
-WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxyQQyYK4sCmb0ix4FkzwoGsbHxBpnL7/exec" # <-- Reemplázala completa aquí
+# 🔗 Asegúrate de tener aquí tu URL que termina en /exec
+WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxyQQyYK4sCmb0ix4FkzwoGsbHxBpnL7/exec"
 
 RESPONSABLES = [
     "",
@@ -21,25 +21,22 @@ st.set_page_config(page_title="Seguimiento de Tareas", page_icon="📋", layout=
 
 def cargar_datos():
     try:
-        # allow_redirects=True es vital para que Google nos entregue los datos
-        res = requests.get(WEBAPP_URL, timeout=15, allow_redirects=True)
+        res = requests.get(WEBAPP_URL, timeout=12, allow_redirects=True)
         valores = res.json()
         if isinstance(valores, list) and len(valores) > 1:
             df = pd.DataFrame(valores[1:], columns=valores[0])
             for col in COLUMNAS:
                 if col not in df.columns:
                     df[col] = ""
-            df["Cumplida"] = df["Cumplida"].apply(lambda x: str(x).lower() in ["true", "1", "yes", "si", "true"])
+            df["Cumplida"] = df["Cumplida"].apply(lambda x: str(x).lower() in ["true", "1", "yes", "si"])
             df["Responsable"] = df["Responsable"].fillna("")
             return df[COLUMNAS]
         return pd.DataFrame(columns=COLUMNAS)
-    except Exception as e:
-        st.sidebar.error(f"Error al conectar con Google Sheets (Lectura): {str(e)}")
+    except Exception:
         return pd.DataFrame(columns=COLUMNAS)
 
 def enviar_datos(payload):
     try:
-        # Enviamos usando post y permitiendo redirecciones automáticas (mismo comportamiento que un navegador)
         res = requests.post(
             WEBAPP_URL,
             data=json.dumps(payload),
@@ -47,13 +44,13 @@ def enviar_datos(payload):
             timeout=15,
             allow_redirects=True
         )
-        if res.status_code == 200:
+        if res.status_code in [200, 302]:
             return True, "OK"
-        return False, f"Respuesta del servidor de Google (Código {res.status_code})"
+        return False, f"Error HTTP {res.status_code}: {res.text[:150]}"
     except Exception as e:
-        return False, f"Error de red/conexión: {str(e)}"
+        return False, f"Excepción de conexión: {str(e)}"
 
-# Cabecera principal con Título y Botón de Sincronización
+# Cabecera principal
 col_titulo, col_sync = st.columns(2)
 with col_titulo:
     st.title("📋 Tablero de Seguimiento de Tareas")
@@ -89,7 +86,7 @@ with st.expander("➕ Registrar Nueva Tarea", expanded=False):
 
 st.markdown("---")
 
-# Filtros interactivos
+# Filtros
 st.subheader("🔍 Filtros de Búsqueda")
 col_f_resp, col_f_estado, col_f_prio = st.columns(3)
 
