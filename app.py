@@ -61,11 +61,9 @@ if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
 # --- 🌸 DISEÑO DE CABECERA CORPORATIVA ---
-# 🛠️ CORRECCIÓN AQUÍ: Se utiliza spec=[1, 4, 2] de forma explícita para evitar el error de Streamlit
-col_logo, col_titulo, col_sync = st.columns(spec=[1, 4, 2])
+col_logo, col_titulo, col_sync = st.columns(spec=)
 
 with col_logo:
-    # Mostramos el isotipo/logo de Lili Pink (Fast Moda) desde una URL web segura
     st.image(
         "https://www.comfenalcovalle.com.co/wp-content/uploads/2026/06/Logo-Lili-Pink-_-Yoi-YAHAD-RGB-20122023_Mesa-de-trabajo-1-scaled.png", 
         width=220
@@ -76,7 +74,6 @@ with col_titulo:
 
 with col_sync:
     st.write("")
-    # 🛠️ CORRECCIÓN AQUÍ: Se define st.columns(1) para el botón en la zona de sincronización
     if st.button("🔄 Actualizar", use_container_width=True):
         st.cache_data.clear()
         st.session_state.df_tareas = obtener_datos_remotos()
@@ -87,12 +84,10 @@ with col_sync:
 def formulario_registro():
     with st.expander("➕ Registrar Nueva Tarea", expanded=False):
         with st.form("nuevo_registro", clear_on_submit=True):
-            # 🛠️ CORRECCIÓN AQUÍ: st.columns(2) obligatorio en versiones modernas
             col_t, col_r = st.columns(2)
             tarea = col_t.text_input("Descripción de la Tarea")
             responsable = col_r.selectbox("Persona a Cargo", RESPONSABLES, index=0)
 
-            # 🛠️ CORRECCIÓN AQUÍ: st.columns(2) obligatorio
             col_p, col_f = st.columns(2)
             prioridad = col_p.selectbox("Prioridad", ["Baja", "Media", "Alta"], index=1)
             fecha_limite = col_f.date_input("Fecha Límite", value=date.today())
@@ -123,7 +118,6 @@ st.markdown("---")
 
 # Filtros rápidos (viven en la UI principal)
 st.subheader("🔍 Filtros de Búsqueda")
-# 🛠️ CORRECCIÓN AQUÍ: st.columns(3) obligatorio
 col_f_resp, col_f_estado, col_f_prio = st.columns(3)
 
 with col_f_resp:
@@ -163,24 +157,23 @@ if filtro_prioridad:
 st.subheader(f"Lista de Tareas ({len(df_filtrado)} encontradas)")
 
 # Tabla interactiva
-# 🛠️ AJUSTE DE ANCHO DE COLUMNAS:
-# "Cumplida" se configura con un ancho fijo de 90 píxeles. Esto evita que se estire o se deforme al redimensionar.
+# 🛠️ AJUSTE SEGURO DE COLUMNAS:
+# Definimos anchos fijos numéricos en píxeles. Esto previene errores de sintaxis y congela el tamaño de "Cumplida".
 editor_df = st.data_editor(
     df_filtrado,
     num_rows="dynamic",
     use_container_width=True,
     key="tabla_editor",
     column_config={
-        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False, width=90),
-        "Tarea": st.column_config.TextColumn("Descripción de la Tarea", required=True),
-        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES, width=200),
-        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"], width=120),
+        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False, width=80),
+        "Tarea": st.column_config.TextColumn("Descripción de la Tarea"),
+        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES, width=180),
+        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"], width=100),
         "Fecha": st.column_config.DateColumn("Fecha Límite", width=120)
     }
 )
 
 # Guardar cambios manuales (Ediciones masivas)
-# 🛠️ CORRECCIÓN AQUÍ: st.columns(2) obligatorio
 col_save, col_metric = st.columns(2)
 
 with col_save:
