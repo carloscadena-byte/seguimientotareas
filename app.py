@@ -159,7 +159,7 @@ editor_df = st.data_editor(
 # Guardar cambios manuales (Ediciones masivas)
 col_save, col_metric = st.columns(2)
 with col_save:
-    if st.button("💾 Guardar Cambios en Google Sheets", use_container_width=True):
+    if st.button("💾 Guardar Cambios", use_container_width=True):
         st.session_state.df_tareas.update(editor_df)
         data_matrix = [COLUMNAS] + st.session_state.df_tareas.values.tolist()
         exito, mensaje = enviar_datos({"action": "update_all", "data": data_matrix})
