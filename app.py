@@ -18,7 +18,7 @@ COLUMNAS = ["Cumplida", "Tarea", "Responsable", "Prioridad", "Fecha"]
 
 st.set_page_config(page_title="Seguimiento de Tareas", page_icon="📋", layout="wide")
 
-# 1. Consulta con caché para evitar esperas y parpadeos
+# 1. Consulta con caché para evitar llamadas lentas repetidas
 @st.cache_data(show_spinner=False)
 def obtener_datos_remotos():
     try:
@@ -51,12 +51,12 @@ def enviar_datos(payload):
     except Exception as e:
         return False, str(e)
 
-# 2. Inicialización del estado en memoria
+# Inicialización del estado de memoria local
 if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
 # Cabecera principal
-col_titulo, col_sync = st.columns([3, 1])
+col_titulo, col_sync = st.columns()
 with col_titulo:
     st.title("📋 Tablero de Seguimiento de Tareas")
 with col_sync:
@@ -66,37 +66,44 @@ with col_sync:
         st.session_state.df_tareas = obtener_datos_remotos()
         st.toast("Datos sincronizados con Google Sheets", icon="✅")
 
-# Formulario para registrar tareas (Sin parpadeo)
-with st.expander("➕ Registrar Nueva Tarea", expanded=False):
-    with st.form("nuevo_registro", clear_on_submit=True):
-        col_t, col_r = st.columns(2)
-        tarea = col_t.text_input("Descripción de la Tarea")
-        responsable = col_r.selectbox("Persona a Cargo", RESPONSABLES, index=0)
+# 2. ⚡ FRAGMENTO AISLADO: El formulario corre de forma independiente del resto de la página
+@st.fragment
+def formulario_registro():
+    with st.expander("➕ Registrar Nueva Tarea", expanded=False):
+        with st.form("nuevo_registro", clear_on_submit=True):
+            col_t, col_r = st.columns(2)
+            tarea = col_t.text_input("Descripción de la Tarea")
+            responsable = col_r.selectbox("Persona a Cargo", RESPONSABLES, index=0)
 
-        col_p, col_f = st.columns(2)
-        prioridad = col_p.selectbox("Prioridad", ["Baja", "Media", "Alta"], index=1)
-        fecha_limite = col_f.date_input("Fecha Límite", value=date.today())
+            col_p, col_f = st.columns(2)
+            prioridad = col_p.selectbox("Prioridad", ["Baja", "Media", "Alta"], index=1)
+            fecha_limite = col_f.date_input("Fecha Límite", value=date.today())
 
-        if st.form_submit_button("Agregar Tarea"):
-            if tarea.strip():
-                nueva_fila = [False, tarea.strip(), responsable, prioridad, str(fecha_limite)]
-                
-                # Actualización optimista: se refleja en pantalla en milisegundos
-                nueva_fila_df = pd.DataFrame([nueva_fila], columns=COLUMNAS)
-                st.session_state.df_tareas = pd.concat([st.session_state.df_tareas, nueva_fila_df], ignore_index=True)
-                
-                # Guardado en Google Sheets
-                exito, mensaje = enviar_datos({"action": "append", "row": nueva_fila})
-                if exito:
-                    st.toast("¡Tarea guardada exitosamente!", icon="🚀")
+            if st.form_submit_button("Agregar Tarea"):
+                if tarea.strip():
+                    nueva_fila = [False, tarea.strip(), responsable, prioridad, str(fecha_limite)]
+                    
+                    # Guardamos de fondo en Google Sheets
+                    exito, mensaje = enviar_datos({"action": "append", "row": nueva_fila})
+                    
+                    if exito:
+                        # Actualizamos la memoria del navegador de inmediato
+                        nueva_fila_df = pd.DataFrame([nueva_fila], columns=COLUMNAS)
+                        st.session_state.df_tareas = pd.concat([st.session_state.df_tareas, nueva_fila_df], ignore_index=True)
+                        st.toast("¡Tarea guardada exitosamente!", icon="🚀")
+                        # Forzamos una actualización limpia de la pantalla sin reconstrucción completa
+                        st.rerun(scope="app")
+                    else:
+                        st.error(f"Error al enviar a Google: {mensaje}")
                 else:
-                    st.toast(f"Error al enviar a Google: {mensaje}", icon="⚠️")
-            else:
-                st.warning("Por favor especifica una descripción para la tarea.")
+                    st.warning("Por favor especifica una descripción para la tarea.")
+
+# Renderizar el formulario aislado
+formulario_registro()
 
 st.markdown("---")
 
-# Filtros rápidos
+# Filtros rápidos (viven en la UI principal)
 st.subheader("🔍 Filtros de Búsqueda")
 col_f_resp, col_f_estado, col_f_prio = st.columns(3)
 
@@ -149,21 +156,19 @@ editor_df = st.data_editor(
     }
 )
 
-# Guardado de modificaciones de tabla
+# Guardar cambios manuales (Ediciones masivas)
 col_save, col_metric = st.columns(2)
 with col_save:
     if st.button("💾 Guardar Cambios en Google Sheets", use_container_width=True):
-        # Actualiza el estado en memoria
         st.session_state.df_tareas.update(editor_df)
-        
-        # Envía la matriz completa a Google Sheets
         data_matrix = [COLUMNAS] + st.session_state.df_tareas.values.tolist()
         exito, mensaje = enviar_datos({"action": "update_all", "data": data_matrix})
         
         if exito:
             st.toast("¡Cambios actualizados en Google Sheets!", icon="💾")
+            st.rerun()
         else:
-            st.toast(f"Error al sincronizar: {mensaje}", icon="❌")
+            st.error(f"Error al sincronizar: {mensaje}")
 
 with col_metric:
     if not df_filtrado.empty:
@@ -171,4 +176,3 @@ with col_metric:
         completadas = int(df_filtrado["Cumplida"].sum())
         avance = int((completadas / total) * 100) if total > 0 else 0
         st.progress(avance / 100, text=f"Progreso en vista actual: {avance}% ({completadas}/{total} tareas)")
-
