@@ -61,7 +61,8 @@ if "df_tareas" not in st.session_state:
     st.session_state.df_tareas = obtener_datos_remotos()
 
 # --- 🌸 DISEÑO DE CABECERA CORPORATIVA ---
-col_logo, col_titulo, col_sync = st.columns(spec=)
+# 🛠️ CORRECCIÓN DE SINTAXIS AQUÍ: Se añadió [1, 4, 2] al parámetro spec para evitar el SyntaxError
+col_logo, col_titulo, col_sync = st.columns(spec=[1, 4, 2])
 
 with col_logo:
     st.image(
@@ -157,8 +158,6 @@ if filtro_prioridad:
 st.subheader(f"Lista de Tareas ({len(df_filtrado)} encontradas)")
 
 # Tabla interactiva
-# 🛠️ AJUSTE SEGURO DE COLUMNAS:
-# Definimos anchos fijos numéricos en píxeles. Esto previene errores de sintaxis y congela el tamaño de "Cumplida".
 editor_df = st.data_editor(
     df_filtrado,
     num_rows="dynamic",
