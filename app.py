@@ -64,6 +64,8 @@ if "df_tareas" not in st.session_state:
 col_logo, col_titulo, col_sync = st.columns([1, 4, 2])
 
 with col_logo:
+    # Mostramos el isotipo/logo de Lili Pink (Fast Moda) desde una URL web segura
+    # Puedes cambiar esta URL por el enlace de cualquier logo que prefieras
     st.image(
         "https://lilipink.com/cdn/shop/files/LILI_PINK_Mesa_de_trabajo_1_f5c09e3e-4509-4dbe-a178-ee38c11e389e_140x.png", 
         width=120
@@ -157,19 +159,16 @@ if filtro_prioridad:
 
 st.subheader(f"Lista de Tareas ({len(df_filtrado)} encontradas)")
 
-# 🛠️ AJUSTE DE ANCHOS DE COLUMNA:
-# Se asigna "small" (pequeño) a Cumplida, Prioridad y Fecha para que la Tarea tome el espacio restante de la pantalla.
+# Tabla interactiva
 editor_df = st.data_editor(
     df_filtrado,
     num_rows="dynamic",
     use_container_width=True,
     key="tabla_editor",
     column_config={
-        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False, width="small"),
-        "Tarea": st.column_config.TextColumn("Descripción de la Tarea", required=True),
-        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES, width="medium"),
-        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"], width="small"),
-        "Fecha": st.column_config.DateColumn("Fecha Límite", width="small")
+        "Cumplida": st.column_config.CheckboxColumn("¿Cumplida?", default=False),
+        "Responsable": st.column_config.SelectboxColumn("Responsable", options=RESPONSABLES),
+        "Prioridad": st.column_config.SelectboxColumn("Prioridad", options=["Baja", "Media", "Alta"])
     }
 )
 
