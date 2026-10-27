@@ -67,7 +67,7 @@ with col_logo:
     # Mostramos el isotipo/logo de Lili Pink (Fast Moda) desde una URL web segura
     # Puedes cambiar esta URL por el enlace de cualquier logo que prefieras
     st.image(
-        "https://lilipink.com/cdn/shop/files/LILI_PINK_Mesa_de_trabajo_1_f5c09e3e-4509-4dbe-a178-ee38c11e389e_140x.png", 
+        "https://www.comfenalcovalle.com.co/wp-content/uploads/2026/06/Logo-Lili-Pink-_-Yoi-YAHAD-RGB-20122023_Mesa-de-trabajo-1-scaled.png", 
         width=120
     )
 
