@@ -18,8 +18,8 @@ COLUMNAS = ["Cumplida", "Tarea", "Responsable", "Prioridad", "Fecha"]
 
 # Configuración de página con icono oficial en la pestaña del navegador
 st.set_page_config(
-    page_title="Fast Moda - Seguimiento", 
-    page_icon="🌸", 
+    page_title="Tareas Seguimiento", 
+    page_icon="📋", 
     layout="wide"
 )
 
@@ -68,16 +68,16 @@ with col_logo:
     # Puedes cambiar esta URL por el enlace de cualquier logo que prefieras
     st.image(
         "https://www.comfenalcovalle.com.co/wp-content/uploads/2026/06/Logo-Lili-Pink-_-Yoi-YAHAD-RGB-20122023_Mesa-de-trabajo-1-scaled.png", 
-        width=180
+        width=220
     )
 
 with col_titulo:
-    st.title("📋 Tablero de Seguimiento de Tareas")
+    st.title("📋 Seguimiento de Tareas Sourcing")
     st.caption("Fast Moda S.A.S. — Gestión Operativa Interna")
 
 with col_sync:
     st.write("")
-    if st.button("🔄 Sincronizar con Google Sheets", use_container_width=True):
+    if st.button("🔄 Actualizar", use_container_width=True):
         st.cache_data.clear()
         st.session_state.df_tareas = obtener_datos_remotos()
         st.toast("Datos Sincronizados", icon="✅")
@@ -175,7 +175,7 @@ editor_df = st.data_editor(
 # Guardar cambios manuales (Ediciones masivas)
 col_save, col_metric = st.columns(2)
 with col_save:
-    if st.button("💾 Guardar Cambios en Google Sheets", use_container_width=True):
+    if st.button("💾 Guardar Cambios", use_container_width=True):
         st.session_state.df_tareas.update(editor_df)
         data_matrix = [COLUMNAS] + st.session_state.df_tareas.values.tolist()
         exito, mensaje = enviar_datos({"action": "update_all", "data": data_matrix})
